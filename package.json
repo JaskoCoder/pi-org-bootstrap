@@ -1,0 +1,29 @@
+{
+  "name": "pi-org-bootstrap",
+  "version": "0.1.0",
+  "description": "Self-assembling autonomous agent framework for pi coding agent",
+  "type": "module",
+  "bin": {
+    "pi-org-bootstrap": "./bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "src/"
+  ],
+  "keywords": [
+    "pi",
+    "agent",
+    "autonomous",
+    "bootstrap",
+    "coding-agent"
+  ],
+  "author": "JaskoCoder",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JaskoCoder/pi-org-bootstrap.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
