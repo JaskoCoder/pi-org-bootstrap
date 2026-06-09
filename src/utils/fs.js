@@ -1,4 +1,4 @@
-import { readdir, stat, readFile, writeFile, mkdir, appendFile } from 'node:fs/promises';
+import { readdir, stat, readFile, writeFile, mkdir, appendFile, cp } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 
 /**
@@ -114,4 +114,12 @@ export async function copyFile(src, dest) {
   await ensureDir(dirname(dest));
   const content = await readFile(src);
   await writeFile(dest, content);
+}
+
+/**
+ * Copy a directory recursively, creating destination directories
+ */
+export async function copyDir(src, dest) {
+  await ensureDir(dest);
+  await cp(src, dest, { recursive: true });
 }

@@ -6,7 +6,7 @@ import { buildRoles } from './generators/agents/role-builder.js';
 import { generateAgents } from './generators/agents/agent-generator.js';
 import { generateOrganization } from './generators/organization/org-generator.js';
 import { generateAgentsMd } from './generators/agents-md/agents-md-gen.js';
-import { generateInfrastructure } from './generators/infrastructure/infra-generator.js';
+import { generateInfrastructure, installSkills, installExtensions } from './generators/infrastructure/infra-generator.js';
 import { generateExtensions } from './generators/extensions/ext-generator.js';
 import * as log from './utils/logger.js';
 
@@ -120,6 +120,14 @@ export async function bootstrap(projectRoot, options = {}) {
   // 4.5 Extensions
   const extFiles = await generateExtensions(projectRoot, roles, userConfig);
   generatedFiles.push(...extFiles);
+
+  // 4.6 Skills
+  const skillFiles = await installSkills(projectRoot, userConfig);
+  generatedFiles.push(...skillFiles.map(s => `.pi/skills/${s}/`));
+
+  // 4.7 Extensions (full install)
+  const extInstalled = await installExtensions(projectRoot, roles, userConfig);
+  generatedFiles.push(...extInstalled.map(e => `.pi/extensions/${e}/`));
 
   // ── Phase 5: Write bootstrap.json ──────────────────
   log.step('5', 'Writing bootstrap configuration');

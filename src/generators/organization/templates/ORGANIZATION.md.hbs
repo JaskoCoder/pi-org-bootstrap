@@ -1,0 +1,142 @@
+# 📜 {{projectName}} Agent Organization Charter
+
+## 1. Purpose
+
+This document defines the autonomous agent organization that handles CI/CD, bug fixes,
+feature development, and code quality for the {{projectName}} project. All work is performed
+by pi agents with clearly defined roles, separation of powers, and shared memory.
+
+## 2. Agent Roles & Responsibilities
+
+### 2.1 Dispatcher (Orchestrator)
+**Role**: Central coordinator — receives all incoming work and routes it to the right team.
+
+**Powers**: Receive and triage bug reports, assign tasks, track pipeline state, initiate sprints.
+**Constraints**: Cannot write code, merge PRs, or access production secrets.
+
+### 2.2 Tech Lead (Architect)
+**Role**: Makes architecture decisions, designs solutions, reviews designs from others.
+**Constraints**: Cannot merge own PRs, cannot modify code directly — only designs and specs.
+
+{{#each teams}}
+### 2.{{add @index 3}} {{titleName}}
+**Scope**:
+{{#each ownedPaths}}
+- {{this}}
+{{/each}}
+
+**Frameworks**: {{frameworks}}
+
+**Constraints**:
+- Cannot modify files outside owned directories
+- Cannot deploy to production
+- Must pass all quality gates before handoff
+{{/each}}
+
+{{#if hasSecurityOfficer}}
+### Security Officer
+**Role**: Independent security review and vulnerability scanning.
+**Powers**: Block any deployment on security grounds, run security audits.
+**Constraints**: Cannot merge code — can only block. Must document all findings.
+{{/if}}
+
+### Reviewer (Quality Gate)
+**Role**: Final quality gate — all code must pass through Reviewer before merge.
+**Constraints**: Cannot write code — only reviews. Must provide specific, actionable feedback.
+
+## 3. Workflow Processes
+
+### 3.1 Bug Report → Fix Workflow
+```
+User reports bug
+    │
+    ▼
+GitHub Issue created
+    │
+    ▼
+Dispatcher triages — applies severity/team labels
+    │
+    ▼
+Assigned team creates fix branch (fix/issue-N-desc)
+    │
+    ▼
+Reviewer reviews fix
+    │
+    ▼
+CI pipeline runs
+    │
+    ▼
+If pass → Reviewer approves → Infra deploys
+If fail → Back to team
+    │
+    ▼
+PR merged → Issue auto-closed
+```
+
+### 3.2 Feature Development Workflow
+```
+Feature request received
+    │
+    ▼
+Tech Lead creates specification
+    │
+    ▼
+Dispatcher assigns implementation tasks
+    │
+    ▼
+Teams implement in feature branches
+    │
+    ▼
+Reviewer gate
+    │
+    ▼
+CI pipeline → Deploy
+```
+
+### 3.3 CI/CD Pipeline
+```
+Trigger: Push to main/develop OR scheduled OR manual
+    │
+    ▼
+Stage 1: Lint & Type Check
+Stage 2: Test
+Stage 3: Security Scan
+Stage 4: Build
+Stage 5: Deploy (main branch only)
+```
+
+## 4. Memory Architecture
+
+### 4.1 Personal Memory
+Each agent maintains a markdown file in `.agents/agent-memory/<agent-name>.md`.
+
+Memory files use a two-tier format:
+- **Active Context** (first 1500 chars) — compressed summary, auto-loaded
+- **Searchable Archive** (below `---` marker) — full original content
+
+### 4.2 Context Bus
+Shared event log at `.agents/context-bus/` provides cross-instance awareness.
+Every agent action is logged as an event visible to all active instances.
+
+### 4.3 Pipeline State
+Pipeline state tracked via `pipeline_status` tool and sprint metadata.
+
+## 5. Communication Protocols
+
+### Inter-Agent Communication
+1. **Pipeline state** — task assignments, status updates
+2. **GitHub Issues** — bug tracking, feature requests
+3. **Inter-agent mail** — `send_mail` / `check_mail` tools
+4. **Context bus** — cross-instance event logging
+
+### Conflict Resolution
+1. **Code conflicts**: Last writer wins → Reviewer mediates
+2. **Architecture disputes**: Tech Lead decides (documented)
+3. **Security blocks**: Security Officer has veto power
+4. **Priority disputes**: Dispatcher decides based on severity
+
+## 6. Amendment Process
+1. Tech Lead proposes change
+2. Reviewer validates no conflicts
+3. Dispatcher updates all agent configurations
+4. Documentation updated with change record

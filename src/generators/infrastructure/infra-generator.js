@@ -1,6 +1,10 @@
-import { join } from 'node:path';
-import { writeText, writeJSON, ensureDir } from '../../utils/fs.js';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { writeText, writeJSON, ensureDir, copyDir } from '../../utils/fs.js';
 import * as log from '../../utils/logger.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /**
  * Generate the .agents/ infrastructure directory.
@@ -98,6 +102,96 @@ Each event is a JSON object on a single line:
   await appendToGitignore(projectRoot);
 
   return generated;
+}
+
+/**
+ * Install skills from the library to .pi/skills/
+ */
+export async function installSkills(projectRoot, userConfig) {
+  log.info('Installing skills...');
+  const skillsDir = join(projectRoot, '.pi', 'skills');
+  const libraryDir = join(__dirname, '..', '..', 'skills');
+  const installed = [];
+
+  const coreSkills = [
+    'smart-dispatcher',
+    'memory-maintenance',
+    'memory-compaction',
+    'smart-memory',
+    'focused-subagent',
+    'tmux-control',
+  ];
+
+  const optionalSkills = {
+    'release-chain': 'releaseChain',
+    'ux-design-chain': 'uxDesignChain',
+    'brain-orchestrator': 'brainWiki',
+  };
+
+  for (const skill of coreSkills) {
+    const src = join(libraryDir, skill);
+    const dest = join(skillsDir, skill);
+    await copyDir(src, dest);
+    installed.push(skill);
+    log.bullet(`skill → .pi/skills/${skill}/`);
+  }
+
+  for (const [skill, featureKey] of Object.entries(optionalSkills)) {
+    if (userConfig.features[featureKey]) {
+      const src = join(libraryDir, skill);
+      const dest = join(skillsDir, skill);
+      await copyDir(src, dest);
+      installed.push(skill);
+      log.bullet(`skill → .pi/skills/${skill}/ (optional)`);
+    }
+  }
+
+  return installed;
+}
+
+/**
+ * Install extensions from the library to .pi/extensions/
+ */
+export async function installExtensions(projectRoot, roles, userConfig) {
+  if (userConfig.interactionMode === 'direct') return [];
+
+  log.info('Installing extensions...');
+  const extDir = join(projectRoot, '.pi', 'extensions');
+  const libraryDir = join(__dirname, '..', '..', 'extensions');
+  const installed = [];
+
+  // Copy head-agent extension
+  await copyDir(join(libraryDir, 'head-agent'), join(extDir, 'head-agent'));
+  installed.push('head-agent');
+  log.bullet('extension → .pi/extensions/head-agent/');
+
+  // Generate constants.ts from template
+  const constantsTemplate = await import('node:fs').then(fs =>
+    fs.promises.readFile(join(libraryDir, 'head-agent', 'constants.ts.template'), 'utf-8')
+  );
+  const teams = roles.filter(r => r.category === 'build-team').map(r => r.name);
+  let constantsContent = constantsTemplate;
+  constantsContent = constantsContent
+    .replace('{{TEAMS_OBJECT}}', JSON.stringify(
+      Object.fromEntries(teams.map(t => [t, { name: t }]))
+    ))
+    .replace('{{TEAMS_ARRAY}}', JSON.stringify(teams))
+    .replace('{{DEBUG_SCOPES_ARRAY}}', JSON.stringify(teams));
+  await writeText(join(extDir, 'head-agent', 'constants.ts'), constantsContent);
+  log.bullet('generated → .pi/extensions/head-agent/constants.ts');
+
+  // Copy command-center
+  await copyDir(join(libraryDir, 'command-center'), join(extDir, 'command-center'));
+  installed.push('command-center');
+  log.bullet('extension → .pi/extensions/command-center/');
+
+  // Copy instance-username
+  const { copyFile } = await import('node:fs/promises');
+  await copyFile(join(libraryDir, 'instance-username.ts'), join(extDir, 'instance-username.ts'));
+  installed.push('instance-username');
+  log.bullet('extension → .pi/extensions/instance-username.ts');
+
+  return installed;
 }
 
 function toTitleCase(str) {

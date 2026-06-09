@@ -1,0 +1,76 @@
+# AGENTS.md
+
+Project guidelines for AI assistants.
+
+## ⚠️ MANDATORY: Always Use Git — Never Local-Only Changes
+
+**Every code change must go through Git. No exceptions.**
+
+1. **Bugs** → Create an Issue
+2. **Triage** → Apply labels
+3. **Code changes** → Always create a branch, commit, and open a PR. Never edit files directly on main.
+4. **Review** → All PRs must pass the Reviewer quality gate
+5. **Resolve** → Close the Issue via PR merge
+
+### Workflow for every change:
+```
+1. Create Issue → 2. Create branch → 3. Delegate to team → 4. Commit & push
+5. Open PR → 6. Review → 7. Merge (auto-closes issue)
+```
+
+## Autonomous Agent Organization
+
+This project has an **autonomous agent organization** at `.agents/` with:
+- **{{roleCount}} specialized agents** across {{teamCount}} teams + dispatcher + reviewer{{#if hasSecurityOfficer}} + security officer{{/if}} + tech lead
+- **Full CI/CD pipeline** — lint → test → security → build → deploy
+- **Git-first bug tracking** — all bugs as Issues with labels
+- **Separation of powers** — no agent can both write and approve code
+- **Personal memory** — each agent has persistent context across sessions
+
+**Read the full organization**: `.agents/ORGANIZATION.md`
+
+### Quick Commands
+```bash
+# Report a bug
+gh issue create --title "bug title" --body "description" --label "type:bug,severity:medium"
+
+# Triage
+gh issue edit <number> --add-label "team:backend,priority:high"
+
+# Create a branch for a fix
+git checkout -b fix/issue-<number>-<short-description>
+
+# Commit and push
+git add -A && git commit -m "fix(scope): description closes #<number>"
+git push origin fix/issue-<number>-<short-description>
+
+# Open PR
+gh pr create --title "fix(scope): description" --body "Closes #<number>" --label "team:backend"
+
+# Review a PR
+gh pr review <number>
+
+# Check CI
+gh pr checks <number>
+
+# Merge
+gh pr merge <number> --squash
+```
+
+### Agent Definitions
+Agents are defined in `.pi/agents/`:
+{{#each roles}}
+- `{{name}}` — {{shortDescription}}
+{{/each}}
+
+## Brain Wiki — Project Context
+
+{{#if hasBrainWiki}}
+This project is tracked in a knowledge base. **At session start**:
+1. Pull latest: `bash ~/.pi/Brain/sync.sh --pull`
+2. Read the briefing: `read ~/.pi/Brain/wiki/briefing.md`
+
+When you make significant changes, update the wiki and push.
+{{else}}
+No wiki integration configured. Enable with `npx pi-org-bootstrap add-skill brain-orchestrator`.
+{{/if}}
