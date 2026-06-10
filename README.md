@@ -832,6 +832,62 @@ npx pi-org-bootstrap init
 # → "Let's design your agent organization!"
 ```
 
+## Plug & Play Usage
+
+pi-org-bootstrap is designed to be **zero-learning-curve**. After running `init`:
+
+1. Start pi in your project directory
+2. A **splash screen** appears with all available commands
+3. **Just type what you want** — the agent routes to the right team
+4. Use `/head` for orchestrator mode, `/pi` for system management, `/help` for guidance
+
+That's it. No configuration needed after init.
+
+### What the Splash Screen Looks Like
+
+```
+🚀 pi-org-bootstrap — Autonomous Agent Organization
+────────────────────────────────────────────────
+
+  Commands:
+  /head        Start head agent mode (delegates to teams)
+  /pi          Pi meta-agents (extensions, skills, config)
+  /help        Ask a question to the agent
+  /debug       Autonomous debug loop
+  /cron        Scheduled tasks
+  /feed        Context bus event feed
+
+  Quick start:
+  • Type /head to activate the orchestrator
+  • Type /pi to manage your pi setup
+  • Just describe what you want built or fixed
+  • The agent will delegate to the right team automatically
+
+  Examples:
+  • "Add a login page" → frontend-team
+  • "Fix the auth bug" → backend-team
+  • "Deploy to production" → infra-devops
+  • "Add a new pi skill" → /pi skills
+
+────────────────────────────────────────────────
+```
+
+### The /pi Meta Team
+
+The `/pi` command gives you access to the meta-agent team that manages the system itself:
+
+```
+/pi              → Show meta-agent menu
+/pi extensions   → Add or modify pi extensions
+/pi agents       → Change agent roles or add teams
+/pi skills       → Add or update agent skills
+/pi config       → Change settings, providers, themes
+/pi status       → Check meta-team health
+/pi docs         → Read pi documentation
+```
+
+Just describe what you need — the meta team handles the implementation.
+
 ## Interview Mode (Greenfield Projects)
 
 If you run `npx pi-org-bootstrap init` in an empty directory (or a fresh git repo

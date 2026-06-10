@@ -1,6 +1,46 @@
 # AGENTS.md
 
-Project guidelines for AI assistants.
+## Quick Start
+
+Welcome! Your project has an autonomous agent organization. Here's how to use it:
+
+### Just type what you want
+The agent will figure out which team to assign it to. No special syntax needed.
+
+```
+"Add a login page"           → frontend-team
+"Fix the auth timeout bug"   → backend-team  
+"Deploy to staging"          → infra-devops
+"Review the open PRs"        → reviewer
+```
+
+### Key Commands
+| Command | What it does |
+|---------|-------------|
+| `/head` | Activate orchestrator mode (delegates to teams) |
+| `/pi` | Manage your pi setup (agents, skills, extensions) |
+| `/help` | Show all commands |
+| `/head status` | See what teams are working on |
+| `/head triage` | Triage open issues |
+| `/head deploy` | Run deployment pipeline |
+| `/debug` | Start autonomous debug loop |
+| `/cron` | Manage scheduled tasks |
+
+### The Teams
+{{#each roles}}
+- **{{name}}** — {{shortDescription}}
+{{/each}}
+
+### How It Works
+1. You describe what you want
+2. The dispatcher routes it to the right team
+3. The team does the work on a git branch
+4. The reviewer checks the code
+5. The PR gets merged
+
+You don't need to know which team does what — the dispatcher figures it out.
+
+---
 
 ## ⚠️ MANDATORY: Always Use Git — Never Local-Only Changes
 

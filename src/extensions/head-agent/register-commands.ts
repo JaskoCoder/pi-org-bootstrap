@@ -44,8 +44,13 @@ export function registerCommands(sctx: ExtensionSharedContext): void {
       if (sub === "review") { pi.sendUserMessage("Delegate to reviewer to review all open PRs: use `gh pr list` to find them, then review each."); return; }
       if (sub === "audit") { pi.sendUserMessage("Delegate to security-officer for a full security audit."); return; }
       const teamList = TEAM_ORDER.map(n => "  " + TEAMS[n].label.padEnd(10) + " " + TEAMS[n].desc).join("\n");
+      void teamList; // kept for subcommand completions
       setMetaMode(false);
-      pi.sendUserMessage("Head Agent mode activated. I will NOT do any work directly — I will delegate everything to the appropriate team using the delegate tool.\n\nAvailable teams:\n" + teamList + "\n\nAll code changes will go through GitHub Issues and PRs. What should I have the teams do?");
+      const friendlyTeamList = TEAM_ORDER.map(n => {
+        const t = TEAMS[n];
+        return "  \u2022 " + t.label.padEnd(10) + " — " + t.desc;
+      }).join("\n");
+      pi.sendUserMessage("\u{1F3AF} Head Agent mode activated\n\nI will delegate everything to the right team automatically.\nJust describe what you need and I'll route it.\n\nDetected teams:\n" + friendlyTeamList + "\n\nAll code changes go through GitHub Issues and PRs.\nWhat should I have the teams do?");
     },
   });
 
@@ -83,14 +88,25 @@ export function registerCommands(sctx: ExtensionSharedContext): void {
         return;
       }
       setMetaMode(true);
-      const metaTeamList = ["pi-extensions", "pi-agents", "pi-skills", "pi-config"]
-        .map(n => "  " + TEAMS[n].label.padEnd(10) + " " + TEAMS[n].desc).join("\n");
-      pi.sendUserMessage(
-        "Pi meta-agent mode activated. I will route all pi-related work through the specialized meta-agent team.\n\n" +
-        "Available meta agents:\n" + metaTeamList + "\n\n" +
-        "I will determine which meta agent(s) to use based on the task and delegate accordingly.\n" +
-        "Type '/head' to return to standard head agent mode."
-      );
+      const splashText = [
+        "\u{1F916} Pi Meta-Agent Team",
+        "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+        "",
+        "  I manage the pi agent system itself. Tell me what you need:",
+        "",
+        "  /pi extensions  \u2192 Add, modify, or fix pi extensions",
+        "  /pi agents      \u2192 Change agent roles or add new teams",
+        "  /pi skills      \u2192 Add or update agent skills",
+        "  /pi config      \u2192 Change settings, providers, themes",
+        "  /pi status      \u2192 Check meta-team health",
+        "  /pi docs        \u2192 Read pi documentation",
+        "",
+        "  Or just describe what you want:\n  \u2022 \"Add a skill that does X\"\n  \u2022 \"Change the dashboard layout\"\n  \u2022 \"Add a new agent for Y\"\n  \u2022 \"Show me how extensions work\"",
+        "",
+        "  Type /head to return to project work.",
+        "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+      ].join("\n");
+      pi.sendUserMessage(splashText);
     },
   });
 
@@ -303,6 +319,42 @@ export function registerCommands(sctx: ExtensionSharedContext): void {
         "  memory [l1|l2|l3|summary] \u2014 Show memory levels",
         "info"
       );
+    },
+  });
+
+  // ── /help command ──
+  pi.registerCommand("help", {
+    description: "Show available commands and usage guide",
+    handler: async (_args, ctx) => {
+      const help = [
+        "\u{1F4D6} pi-org-bootstrap Help",
+        "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+        "",
+        "  Just type what you want and the agent handles the rest.",
+        "  It will delegate to the right team automatically.",
+        "",
+        "  Commands:",
+        "  /head        Activate head agent (orchestrator mode)",
+        "  /pi          Pi system management (extensions, skills, config)",
+        "  /debug       Autonomous debug loop",
+        "  /cron        Manage scheduled tasks",
+        "  /feed        Show cross-agent event feed",
+        "  /help        This help message",
+        "",
+        "  Workflow:",
+        "  1. Describe what you want done",
+        "  2. The agent creates an issue, assigns a team, opens a PR",
+        "  3. Use /head status to see progress",
+        "",
+        "  Tips:",
+        "  \u2022 \"Fix bug where login fails\" \u2192 agent routes to backend-team",
+        "  \u2022 \"Build a dashboard page\" \u2192 agent routes to frontend-team",
+        "  \u2022 \"Deploy to staging\" \u2192 agent routes to infra-devops",
+        "  \u2022 \"Add a new agent for X\" \u2192 type /pi agents",
+        "",
+        "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+      ].join("\n");
+      ctx.ui.notify(help, "info");
     },
   });
 }

@@ -578,6 +578,39 @@ export default function (pi: ExtensionAPI) {
     if (!isInteractive) return;
     // NOTE: Footer is now managed by info-footer.ts extension.
     // Removed setFooter() here to avoid overriding the custom footer.
+
+    // ── Splash screen ──
+    if (ctx.hasUI) {
+      const splashLines = [
+        "",
+        "\u{1F680} pi-org-bootstrap — Autonomous Agent Organization",
+        "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+        "",
+        "  Commands:",
+        "  /head        Start head agent mode (delegates to teams)",
+        "  /pi          Pi meta-agents (extensions, skills, config)",
+        "  /help        Ask a question to the agent",
+        "  /debug       Autonomous debug loop",
+        "  /cron        Scheduled tasks",
+        "  /feed        Context bus event feed",
+        "",
+        "  Quick start:",
+        "  \u2022 Type /head to activate the orchestrator",
+        "  \u2022 Type /pi to manage your pi setup",
+        "  \u2022 Just describe what you want built or fixed",
+        "  \u2022 The agent will delegate to the right team automatically",
+        "",
+        "  Examples:",
+        "  \u2022 \"Add a login page\" \u2192 frontend-team",
+        "  \u2022 \"Fix the auth bug\" \u2192 backend-team",
+        "  \u2022 \"Deploy to production\" \u2192 infra-devops",
+        "  \u2022 \"Add a new pi skill\" \u2192 /pi skills",
+        "",
+        "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+        "",
+      ];
+      ctx.ui.notify(splashLines.join("\n"), "info");
+    }
   });
 
   pi.on("session_shutdown", async (_event, ctx) => {
