@@ -1,6 +1,9 @@
 import { DOMAIN_TEAM_MAP, TOOL_SETS } from '../../config/schema.js';
 import * as log from '../../utils/logger.js';
 
+// Re-export interview profile builder for external use
+export { buildProfileFromInterview } from '../../prompter/interview.js';
+
 /**
  * Build agent roles from StackProfile + UserConfig.
  *

@@ -21,6 +21,16 @@ export async function prompt(stackProfile, options = {}) {
     };
   }
 
+  // Interview mode for empty / greenfield projects
+  if (stackProfile.isEmptyProject) {
+    const { interview } = await import('./interview.js');
+    const result = await interview(stackProfile, options);
+    // interview() returns { stackProfile, userConfig, interview }
+    // We need to communicate the enriched profile back to the caller.
+    // Attach it so index.js can pick it up.
+    return result;
+  }
+
   // Apply CLI overrides
   const defaults = {
     ...DEFAULT_CONFIG,

@@ -52,7 +52,34 @@ export async function bootstrap(projectRoot, options = {}) {
   const stackProfile = await scan(projectRoot);
 
   // ── Phase 2: Ask questions → UserConfig ────────────
-  const userConfig = await prompt(stackProfile, options);
+  if (stackProfile.isEmptyProject) {
+    log.info('Empty project detected — switching to interview mode');
+    log.newline();
+    log.info('Tell me about your project and I\'ll set up the perfect agent organization.');
+    log.newline();
+  } else {
+    log.info('Detected your tech stack — let me confirm a few things.');
+  }
+
+  const promptResult = await prompt(stackProfile, options);
+
+  // Interview mode returns { stackProfile, userConfig, interview }
+  // Normal mode returns plain UserConfig
+  let userConfig;
+  let interviewAnswers = null;
+  let enrichedProfile = stackProfile;
+
+  if (promptResult && typeof promptResult === 'object' && promptResult.userConfig) {
+    // Interview mode path
+    enrichedProfile = promptResult.stackProfile;
+    userConfig = promptResult.userConfig;
+    interviewAnswers = promptResult.interview;
+  } else {
+    userConfig = promptResult;
+  }
+
+  // Replace stackProfile with enriched version (from interview)
+  const finalProfile = enrichedProfile;
 
   // Normalize userConfig — handle multiselect results
   // Features can come as object { memory: true, ... } or needs normalization
@@ -78,8 +105,9 @@ export async function bootstrap(projectRoot, options = {}) {
 
   // Normalize interactionMode
   if (typeof userConfig.interactionMode === 'string') {
-    if (userConfig.interactionMode.includes('Head agent')) userConfig.interactionMode = 'head-agent';
-    else if (userConfig.interactionMode.includes('Direct')) userConfig.interactionMode = 'direct';
+    if (userConfig.interactionMode.includes('Head agent') || userConfig.interactionMode === 'head-agent') userConfig.interactionMode = 'head-agent';
+    else if (userConfig.interactionMode.includes('Direct') || userConfig.interactionMode === 'direct') userConfig.interactionMode = 'direct';
+    else if (userConfig.interactionMode === 'both') userConfig.interactionMode = 'both';
     else userConfig.interactionMode = 'both';
   }
 
@@ -90,7 +118,7 @@ export async function bootstrap(projectRoot, options = {}) {
 
   // ── Phase 3: Build roles → Role[] ──────────────────
   log.step('3', 'Building agent roles');
-  const roles = buildRoles(stackProfile, userConfig);
+  const roles = buildRoles(finalProfile, userConfig);
   log.success(`${roles.length} roles generated:`);
   for (const role of roles) {
     log.bullet(`${role.name} (${role.category})`);
@@ -102,15 +130,15 @@ export async function bootstrap(projectRoot, options = {}) {
   const generatedFiles = [];
 
   // 4.1 Agent definitions
-  const agentFiles = await generateAgents(projectRoot, roles, stackProfile, userConfig);
+  const agentFiles = await generateAgents(projectRoot, roles, finalProfile, userConfig);
   generatedFiles.push(...agentFiles);
 
   // 4.2 ORGANIZATION.md
-  const orgFile = await generateOrganization(projectRoot, roles, stackProfile, userConfig);
+  const orgFile = await generateOrganization(projectRoot, roles, finalProfile, userConfig);
   generatedFiles.push(orgFile);
 
   // 4.3 AGENTS.md
-  const agentsMdFile = await generateAgentsMd(projectRoot, roles, stackProfile, userConfig);
+  const agentsMdFile = await generateAgentsMd(projectRoot, roles, finalProfile, userConfig);
   generatedFiles.push(agentsMdFile);
 
   // 4.4 Infrastructure (.agents/)
@@ -140,13 +168,15 @@ export async function bootstrap(projectRoot, options = {}) {
     bootstrapVersion: '0.1.0',
 
     scan: {
-      languages: stackProfile.languages.map((l) => l.name),
-      frameworks: stackProfile.frameworks.map((f) => f.name),
-      structure: stackProfile.structure.type,
-      databases: stackProfile.databases.map((d) => d.type),
-      packageManager: stackProfile.packageManager,
-      gitHosting: stackProfile.gitHosting,
+      languages: finalProfile.languages.map((l) => l.name),
+      frameworks: finalProfile.frameworks.map((f) => f.name),
+      structure: finalProfile.structure.type,
+      databases: finalProfile.databases.map((d) => d.type),
+      packageManager: finalProfile.packageManager,
+      gitHosting: finalProfile.gitHosting,
     },
+
+    ...(interviewAnswers ? { interview: interviewAnswers } : {}),
 
     config: {
       projectType: userConfig.projectType,
@@ -176,7 +206,7 @@ export async function bootstrap(projectRoot, options = {}) {
   log.header('Bootstrap Complete');
   log.success(`${roles.length} agents generated in ${elapsed}s`);
   log.bullet(`${generatedFiles.length} files created`);
-  log.bullet(`Domains: ${stackProfile.domains.map((d) => d.name).join(', ')}`);
+  log.bullet(`Domains: ${finalProfile.domains.map((d) => d.name).join(', ')}`);
   log.newline();
   log.info('Next steps:');
   log.bullet('Review your agents in .pi/agents/');

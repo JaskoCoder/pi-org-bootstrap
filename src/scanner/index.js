@@ -50,8 +50,20 @@ export async function scan(projectRoot) {
     directories,
   });
 
-  log.success(`Stack detected: ${profile.languages.map((l) => l.name).join(', ')}`);
-  log.bullet(`Frameworks: ${profile.frameworks.map((f) => f.name).join(', ') || 'none'}`);
+  // Detect empty / greenfield project
+  if (profile.languages.length === 0 && profile.frameworks.length === 0) {
+    profile.isEmptyProject = true;
+  }
+
+  // Stash projectRoot for interview mode
+  profile._projectRoot = projectRoot;
+
+  if (profile.isEmptyProject) {
+    log.info('No existing tech stack detected — empty / greenfield project');
+  } else {
+    log.success(`Stack detected: ${profile.languages.map((l) => l.name).join(', ')}`);
+    log.bullet(`Frameworks: ${profile.frameworks.map((f) => f.name).join(', ') || 'none'}`);
+  }
   log.bullet(`Structure: ${profile.structure.type}`);
 
   return profile;

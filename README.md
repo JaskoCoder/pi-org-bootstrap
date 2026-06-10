@@ -44,6 +44,155 @@ npx pi-org-bootstrap init
 
 ---
 
+## Interview Mode (Greenfield Projects)
+
+When you run `init` in an **empty directory** (no existing codebase), pi-org-bootstrap switches
+to **interview mode** — a guided 5-phase conversation that builds a synthetic `StackProfile` from
+your answers, then generates the same tailored agent organization as if it had scanned a real project.
+
+### Quick Mode vs. Interview Mode
+
+```
+            npx pi-org-bootstrap init
+                       │
+                       ▼
+              ┌───────────────┐
+              │ Scan project  │
+              └───────┬───────┘
+                      │
+              ┌───────┴────────┐
+              │                │
+         Has code?        Empty dir?
+              │                │
+              ▼                ▼
+     ┌────────────┐   ┌─────────────────┐
+     │ QUICK MODE │   │ INTERVIEW MODE  │
+     │            │   │                 │
+     │ Scan found │   │ 5-phase         │
+     │ stack,     │   │ conversation    │
+     │ confirm    │   │ about what      │
+     │ choices    │   │ you want to     │
+     │            │   │ build           │
+     └─────┬──────┘   └────────┬────────┘
+           │                   │
+           └───────┬───────────┘
+                   ▼
+          Generate Agent Org
+```
+
+### Interview Phases
+
+```
+┌──────────────────────────────────────────────────────┐
+│                INTERVIEW MODE                         │
+│                                                       │
+│  Phase A: VISION                                      │
+│  "What are you building?"                             │
+│  → Project type, name, description                    │
+│                                                       │
+│  Phase B: TECH STACK                                  │
+│  "What technologies will you use?"                    │
+│  → Languages, frameworks, databases, tools            │
+│  → Conditional questions (Next.js? Express? etc.)     │
+│                                                       │
+│  Phase C: TEAM & ROLES                                │
+│  "How is your project structured?"                    │
+│  → Monorepo / single app / microservices              │
+│  → Directory layout, specialized domains              │
+│                                                       │
+│  Phase D: WORKFLOW                                    │
+│  "How do you want to work with agents?"               │
+│  → Head agent / direct / both                         │
+│  → Bug tracking, review requirements                  │
+│                                                       │
+│  Phase E: CAPABILITIES                                │
+│  "Which agent features do you need?"                  │
+│  → Memory, context bus, dispatcher, release chain...  │
+│                                                       │
+│  ─────────────────────────────────────                 │
+│                                                       │
+│  Interview answers → Synthetic StackProfile            │
+│  Synthetic StackProfile → Role Builder → Generate      │
+│  (same output as scanning a real project)              │
+│                                                       │
+└──────────────────────────────────────────────────────┘
+```
+
+### Quick Start for Greenfield Projects
+
+```bash
+mkdir my-new-project && cd my-new-project
+git init
+npx pi-org-bootstrap init
+# → 🚀 Let's design your agent organization!
+# → What are you building? ...
+```
+
+### Example Interview Session
+
+A fictional project — a SaaS platform built with Next.js + Express:
+
+```
+🚀 Let's design your agent organization!
+
+? What are you building?
+  > A SaaS platform for project management with real-time collaboration
+
+? What type of project?
+  > Full-stack web application
+
+? Project name?
+  > projectflow
+
+? Languages?
+  > ○ TypeScript/JavaScript ✓
+
+? Frontend framework?
+  > Next.js
+
+? Backend framework?
+  > Express
+
+? Database?
+  > PostgreSQL, Redis
+
+? ORM?
+  > Prisma
+
+? Styling?
+  > Tailwind CSS
+
+? Docker?
+  > Yes
+
+? CI/CD?
+  > GitHub Actions
+
+? Project structure?
+  > Monorepo (frontend/ + backend/)
+
+? Specialized domains?
+  > ○ Real-time / WebSockets ✓
+    ○ Background jobs / queues ✓
+
+? Agent interaction mode?
+  > Head agent mode
+
+? Agent features?
+  > ✓ Memory ✓ Context bus ✓ Smart dispatcher ✓ Release chain ✓ Tmux
+
+✓ Generating agent organization...
+✓ 11 agents generated
+✓ 7 skills installed
+✓ 3 extensions configured
+```
+
+The output is **identical** to what you'd get from scanning an existing Next.js + Express
+monorepo — the same agent roles, skills, and extensions are generated from the synthetic
+StackProfile.
+
+---
+
 ## Detailed Flow: How It Self-Assembles
 
 ### Phase 1 — Project Scan
@@ -672,9 +821,52 @@ Generated agents: dispatcher (simplified), tech-lead, reviewer,
 ## Quick Start
 
 ```bash
-# Interactive bootstrap
+# Interactive bootstrap (existing project)
 npx pi-org-bootstrap init
 
+# Interactive bootstrap (empty / new project → Interview Mode)
+mkdir my-new-project && cd my-new-project
+git init
+npx pi-org-bootstrap init
+# → Interview mode activates
+# → "Let's design your agent organization!"
+```
+
+## Interview Mode (Greenfield Projects)
+
+If you run `npx pi-org-bootstrap init` in an empty directory (or a fresh git repo
+with no code yet), the system automatically switches to **interview mode** — an
+interactive conversation about what you want to build.
+
+```bash
+mkdir my-new-project && cd my-new-project
+git init
+npx pi-org-bootstrap init
+# → Interview mode activates
+# → "Let's design your agent organization!"
+```
+
+The interview covers 5 phases:
+
+1. **Vision** — What are you building? Project type and name
+2. **Tech Stack** — Languages, frameworks, databases, tools
+3. **Team & Roles** — Project structure, directories, specialized domains
+4. **Workflow** — How agents interact, bug tracking, review requirements
+5. **Capabilities** — Which agent features to enable
+
+Answers are converted into a synthetic `StackProfile` that produces the same
+agent organization as a real project scan. The interview answers are also stored
+in `bootstrap.json` under the `interview` key for reference.
+
+Use `--yes` to skip the interview and accept sensible defaults:
+
+```bash
+npx pi-org-bootstrap init --yes
+```
+
+### Other commands
+
+```bash
 # Non-interactive (use all defaults)
 npx pi-org-bootstrap init --yes
 
